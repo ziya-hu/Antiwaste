@@ -1,1 +1,464 @@
-# Antiwaste
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AntiWaste 🥦</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00A550">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AntiWaste">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Nunito', sans-serif; background: #f0fdf4; max-width: 420px; margin: 0 auto; min-height: 100vh; overflow-x: hidden; }
+body.dark { background: #0f172a; }
+::-webkit-scrollbar { display: none; }
+.card { transition: transform 0.15s; cursor: pointer; }
+.card:active { transform: scale(0.98); }
+textarea:focus, input:focus, select:focus { outline: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; display: inline-block; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+.modal-box { width: 100%; max-width: 420px; border-radius: 20px 20px 0 0; padding: 24px 20px 40px; max-height: 90vh; overflow-y: auto; }
+.tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; display: flex; z-index: 100; align-items: center; border-top: 1px solid #e5e7eb; }
+.tab-item { flex: 1; padding: 10px 0 8px; text-align: center; cursor: pointer; font-size: 10px; font-weight: 500; color: #aaa; }
+.tab-item.active { color: #00A550; font-weight: 800; }
+.tab-item .tab-icon { font-size: 20px; }
+.fab { background: #00A550; color: #fff; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 26px; cursor: pointer; box-shadow: 0 4px 16px rgba(0,166,80,0.4); display: flex; align-items: center; justify-content: center; margin-top: -16px; border: 3px solid white; }
+.header { background: #00A550; color: #fff; padding: 20px 20px 16px; display: flex; align-items: center; justify-content: space-between; }
+.stat-card { flex: 1; border-radius: 16px; padding: 14px 8px; text-align: center; cursor: pointer; transition: transform 0.15s; }
+.stat-card:active { transform: scale(0.96); }
+.stat-num { font-size: 28px; font-weight: 900; color: #fff; }
+.stat-label { font-size: 11px; color: rgba(255,255,255,0.9); margin-top: 2px; }
+.stat-hint { font-size: 9px; color: rgba(255,255,255,0.7); margin-top: 3px; }
+.food-card { background: #fff; border-radius: 14px; margin: 0 16px 8px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1.5px solid #e5e7eb; cursor: pointer; transition: transform 0.15s; }
+.food-card:active { transform: scale(0.98); }
+.food-card.urgent { box-shadow: 0 2px 12px rgba(239,68,68,0.2); border-color: #fca5a5; }
+.section-title { padding: 12px 16px 6px; font-size: 14px; font-weight: 800; color: #1e293b; }
+.badge { font-size: 10px; font-weight: 800; border-radius: 20px; padding: 2px 9px; color: #fff; }
+.btn-primary { width: 100%; background: #00A550; color: #fff; border: none; border-radius: 12px; padding: 13px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; }
+.btn-secondary { width: 100%; background: #f1f5f9; color: #555; border: none; border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; font-family: 'Nunito', sans-serif; }
+.btn-danger { width: 100%; background: #fef2f2; color: #ef4444; border: none; border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 14px; font-family: 'Nunito', sans-serif; }
+.input { width: 100%; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 11px 13px; font-size: 14px; margin-bottom: 10px; background: #fff; color: #1e293b; font-family: 'Nunito', sans-serif; }
+.ai-btn { width: 100%; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; border: none; border-radius: 10px; padding: 10px; font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'Nunito', sans-serif; }
+.toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 10px 24px; border-radius: 30px; font-size: 13px; font-weight: 700; z-index: 999; box-shadow: 0 4px 20px rgba(0,0,0,0.35); white-space: nowrap; display: none; }
+.content { flex: 1; overflow-y: auto; padding-bottom: 80px; }
+.profile-header { background: linear-gradient(135deg,#00A550,#4ade80); border-radius: 20px; padding: 24px 16px; text-align: center; color: #fff; margin-bottom: 16px; }
+.profile-card { background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.toggle { width: 46px; height: 26px; border-radius: 13px; background: #cbd5e1; cursor: pointer; position: relative; transition: background 0.3s; flex-shrink: 0; }
+.toggle.on { background: #00A550; }
+.toggle-thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+.toggle.on .toggle-thumb { left: 23px; }
+
+/* DARK MODE */
+body.dark .food-card { background: #1e293b; border-color: #334155; color: #f1f5f9; }
+body.dark .food-card.urgent { border-color: #7f1d1d; }
+body.dark .section-title { color: #f1f5f9; }
+body.dark .modal-box { background: #1e293b; }
+body.dark .input { background: #1e293b; border-color: #475569; color: #f1f5f9; }
+body.dark .btn-secondary { background: #334155; color: #94a3b8; }
+body.dark .btn-danger { background: #3b0f0f; }
+body.dark .tab-bar { background: #1e293b; border-color: #334155; }
+body.dark .tab-item { color: #64748b; }
+body.dark .tab-item.active { color: #00A550; }
+body.dark .profile-card { background: #1e293b; }
+body.dark .profile-card span { color: #f1f5f9; }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div style="font-size:22px;font-weight:900;letter-spacing:-0.5px">🥦 AntiWaste</div>
+    <div id="headerDate" style="font-size:12px;opacity:0.85;margin-top:2px"></div>
+  </div>
+  <button onclick="toggleDark()" style="background:rgba(255,255,255,0.2);border:none;border-radius:12px;padding:8px 12px;color:#fff;font-size:18px;cursor:pointer" id="darkBtn">🌙</button>
+</div>
+
+<!-- CONTENT -->
+<div class="content" id="content"></div>
+
+<!-- TAB BAR -->
+<div class="tab-bar" id="tabBar" style="background:#fff">
+  <div class="tab-item active" onclick="setTab(0)" id="tab0"><div class="tab-icon">🏠</div>Əsas</div>
+  <div class="tab-item" onclick="setTab(1)" id="tab1"><div class="tab-icon">📦</div>Ərzaqlar</div>
+  <div style="flex:1;display:flex;justify-content:center;align-items:center;padding-bottom:6px">
+    <button class="fab" onclick="openAdd()">+</button>
+  </div>
+  <div class="tab-item" onclick="setTab(2)" id="tab2"><div class="tab-icon">👨‍🍳</div>Reseptlər</div>
+  <div class="tab-item" onclick="setTab(3)" id="tab3"><div class="tab-icon">👤</div>Profil</div>
+</div>
+
+<script>
+const CAT_EMOJI = {Salat:"🥗",Dən:"🌾",Ərzaq:"🥘",Pasta:"🍝",Südlü:"🥛",Meyvə:"🍎",Tərəvəz:"🥦"};
+const CATEGORIES = Object.keys(CAT_EMOJI);
+
+let dark = JSON.parse(localStorage.getItem('aw_dark')||'false');
+let foods = JSON.parse(localStorage.getItem('aw_foods')||'null') || [
+  {id:1,name:"Toyuq salatı",added:"2026-05-04",expiry:"2026-05-07",category:"Salat",recipe:"Toyuq döşü, pomidor, xiyar, zeytun yağı ilə hazırlanır."},
+  {id:2,name:"Düyü",added:"2026-05-05",expiry:"2026-05-10",category:"Dən",recipe:"Buxarda bişirilmiş düyü, kərə yağı ilə."},
+  {id:3,name:"Lobya yeməyi",added:"2026-05-04",expiry:"2026-05-08",category:"Ərzaq",recipe:"Lobya, soğan, sarımsaq və pomidor sousu ilə."},
+  {id:4,name:"Makaron",added:"2026-05-06",expiry:"2026-05-13",category:"Pasta",recipe:"Pomidor sousu ilə İtalyan makaronu."},
+  {id:5,name:"Süd",added:"2026-05-05",expiry:"2026-05-07",category:"Südlü",recipe:"Sağlam içki, müsli ilə birlikdə."}
+];
+let history = JSON.parse(localStorage.getItem('aw_history')||'null') || [
+  {name:"Kərə yağı",onTime:true},{name:"Yoğurt",onTime:true},{name:"Pomidor",onTime:false},
+  {name:"Pendir",onTime:true},{name:"Yumurta",onTime:true},{name:"Alma",onTime:true},
+  {name:"Çörək",onTime:false},{name:"Ayran",onTime:true}
+];
+let currentTab = 0;
+
+function save() {
+  localStorage.setItem('aw_foods', JSON.stringify(foods));
+  localStorage.setItem('aw_history', JSON.stringify(history));
+  localStorage.setItem('aw_dark', JSON.stringify(dark));
+}
+
+function daysLeft(expiry) {
+  return Math.ceil((new Date(expiry) - new Date()) / 86400000);
+}
+
+function badge(days) {
+  const cfg = days<=1?{bg:"#ef4444",label:"Kritik"}:days<=3?{bg:"#f59e0b",label:"Tezliklə"}:{bg:"#22c55e",label:"Normal"};
+  return `<span class="badge" style="background:${cfg.bg}">${cfg.label}</span>`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(()=>t.style.display='none', 2500);
+}
+
+function toggleDark() {
+  dark = !dark;
+  document.body.classList.toggle('dark', dark);
+  document.getElementById('darkBtn').textContent = dark ? '☀️' : '🌙';
+  save();
+  render();
+}
+
+function setTab(n) {
+  currentTab = n;
+  for(let i=0;i<4;i++) {
+    document.getElementById('tab'+i).classList.toggle('active', i===n);
+  }
+  render();
+}
+
+function cardStyle(urgent) {
+  return `food-card card${urgent?' urgent':''}`;
+}
+
+function foodCard(f, modalClose='') {
+  const d = daysLeft(f.expiry);
+  const urgent = d <= 3;
+  const col = d<=1?'#ef4444':d<=3?'#f59e0b':'#22c55e';
+  return `<div class="${cardStyle(urgent)}" onclick="${modalClose}openDetail(${f.id})" style="${dark?'background:#1e293b;border-color:'+(urgent?'#7f1d1d':'#334155')+';':''}">
+    <div style="font-size:30px">${CAT_EMOJI[f.category]||'🍱'}</div>
+    <div style="flex:1">
+      <div style="font-weight:800;font-size:15px;color:${dark?'#f1f5f9':'#1e293b'}">${f.name}</div>
+      <div style="margin-top:4px">${badge(d)}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:20px;font-weight:900;color:${col}">${d}</div>
+      <div style="font-size:10px;color:${dark?'#94a3b8':'#999'}">gün</div>
+    </div>
+  </div>`;
+}
+
+function render() {
+  const today = new Date();
+  document.getElementById('headerDate').textContent = today.toLocaleDateString('az-AZ',{day:'numeric',month:'long',year:'numeric'}) + ' · Yemәyi israf etmə!';
+
+  const expiring = foods.filter(f=>daysLeft(f.expiry)<=3);
+  const safe = foods.filter(f=>daysLeft(f.expiry)>3);
+  const critical = foods.filter(f=>daysLeft(f.expiry)<=1);
+  const onTimeCount = history.filter(h=>h.onTime).length;
+  const totalDeleted = history.length;
+
+  let html = '';
+
+  if(currentTab===0) {
+    html += `<div style="display:flex;gap:10px;padding:16px 16px 8px">
+      <div class="stat-card" style="background:#0066B3;box-shadow:0 4px 12px #0066B355" onclick="openStatFilter('umumi')">
+        <div class="stat-num">${foods.length}</div>
+        <div class="stat-label">Ümumi</div>
+        <div class="stat-hint">bax ›</div>
+      </div>
+      <div class="stat-card" style="background:#EF3340;box-shadow:0 4px 12px #EF334055" onclick="openStatFilter('tezlikle')">
+        <div class="stat-num">${expiring.length}</div>
+        <div class="stat-label">Tezliklə</div>
+        <div class="stat-hint">bax ›</div>
+      </div>
+      <div class="stat-card" style="background:#00A550;box-shadow:0 4px 12px #00A55055" onclick="openStatFilter('kritik')">
+        <div class="stat-num">${critical.length}</div>
+        <div class="stat-label">Kritik</div>
+        <div class="stat-hint">bax ›</div>
+      </div>
+    </div>`;
+
+    html += `<div onclick="doScan()" style="margin:8px 16px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 4px 16px rgba(124,58,237,0.3)">
+      <div style="font-size:36px" id="qrIcon">📷</div>
+      <div style="color:#fff">
+        <div style="font-weight:900;font-size:15px">QR Kodu Skan Et</div>
+        <div style="font-size:12px;opacity:0.9;margin-top:2px">Qabın üzərindəki kodu oxut</div>
+      </div>
+      <div style="margin-left:auto;color:rgba(255,255,255,0.7);font-size:20px">›</div>
+    </div>`;
+
+    if(expiring.length>0) {
+      html += `<div class="section-title">⚠️ Tezliklə Bitəcək</div>`;
+      expiring.forEach(f=>html+=foodCard(f));
+    }
+    html += `<div class="section-title">✅ Normal Vəziyyətdə</div>`;
+    if(safe.length===0) html += `<div style="padding:8px 16px;color:${dark?'#94a3b8':'#999'};font-size:13px">Hazırda normal ərzaq yoxdur.</div>`;
+    safe.forEach(f=>html+=foodCard(f));
+  }
+
+  else if(currentTab===1) {
+    html += `<div class="section-title">Bütün Ərzaqlar (${foods.length})</div>`;
+    [...foods].sort((a,b)=>daysLeft(a.expiry)-daysLeft(b.expiry)).forEach(f=>html+=foodCard(f));
+  }
+
+  else if(currentTab===2) {
+    html += `<div style="padding:16px"><div style="font-size:14px;font-weight:800;color:${dark?'#f1f5f9':'#1e293b'};margin-bottom:12px">👨‍🍳 Bugün Nə Bişirim?</div>`;
+    if(expiring.length===0) {
+      html += `<div style="text-align:center;padding:40px 0;color:${dark?'#94a3b8':'#aaa'}"><div style="font-size:52px">🎉</div><div style="font-weight:700;margin-top:12px">Heç bir ərzaq tezliklə bitmir!</div></div>`;
+    } else {
+      expiring.forEach(f=>{
+        html += `<div style="background:${dark?'#1e293b':'#fff'};border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,0.07);border-left:4px solid #f59e0b">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="font-size:32px">${CAT_EMOJI[f.category]||'🍱'}</div>
+            <div>
+              <div style="font-weight:900;font-size:15px;color:${dark?'#f1f5f9':'#1e293b'}">${f.name}</div>
+              <div style="font-size:11px;color:#f59e0b;font-weight:700">${daysLeft(f.expiry)} gün ərzində istifadə edin!</div>
+            </div>
+            <button onclick="openDetail(${f.id})" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:18px">✏️</button>
+          </div>
+          <div style="background:${dark?'#0f2a1f':'#f0fdf4'};border-radius:10px;padding:10px 12px;font-size:13px;color:${dark?'#94a3b8':'#555'};line-height:1.7">${f.recipe}</div>
+        </div>`;
+      });
+    }
+    html += `</div>`;
+  }
+
+  else if(currentTab===3) {
+    const xal = onTimeCount*20 + foods.length*10;
+    html += `<div style="padding:16px">
+      <div class="profile-header">
+        <div style="font-size:56px">👤</div>
+        <div style="font-weight:900;font-size:20px;margin-top:8px">İstifadəçi</div>
+        <div style="opacity:0.85;font-size:13px;margin-top:4px">AntiWaste Üzvü · ${new Date().getFullYear()}</div>
+      </div>
+      ${profileCard('💰','Qənaət','₼ 45.00')}
+      ${profileCard('🌿','İsraf miqdarı',`${totalDeleted-onTimeCount} məhsul`)}
+      ${profileCard('📦','İzlənən ərzaq',`${foods.length} məhsul`)}
+      ${profileCard('🏆','Xal',`${xal}`)}
+      <div class="profile-card" style="${dark?'background:#1e293b':''}">
+        <div style="font-size:24px">${dark?'🌙':'☀️'}</div>
+        <div style="flex:1;font-weight:600;color:${dark?'#f1f5f9':'#1e293b'};font-size:14px">Qaranlıq Rejim</div>
+        <div class="toggle ${dark?'on':''}" onclick="toggleDark()"><div class="toggle-thumb"></div></div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function profileCard(icon, label, val) {
+  return `<div class="profile-card" style="${dark?'background:#1e293b':''}">
+    <div style="font-size:24px">${icon}</div>
+    <div style="flex:1;font-weight:600;color:${dark?'#f1f5f9':'#1e293b'};font-size:14px">${label}</div>
+    <div style="font-weight:900;color:#00A550;font-size:15px">${val}</div>
+  </div>`;
+}
+
+function openStatFilter(type) {
+  const titles = {umumi:'📦 Bütün Məhsullar', tezlikle:'⚠️ Tezliklə Bitəcək', kritik:'🔴 Kritik Məhsullar'};
+  const list = type==='umumi'?foods:type==='tezlikle'?foods.filter(f=>daysLeft(f.expiry)<=3):foods.filter(f=>daysLeft(f.expiry)<=1);
+  let inner = list.length===0
+    ? `<div style="text-align:center;padding:30px 0;color:#aaa"><div style="font-size:40px">🎉</div><div style="font-weight:700;margin-top:8px">Bu kateqoriyada məhsul yoxdur</div></div>`
+    : list.map(f=>foodCard(f,'closeModal();')).join('');
+  showModal(`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div style="font-weight:900;font-size:17px;color:${dark?'#f1f5f9':'#1e293b'}">${titles[type]}</div>
+    <button onclick="closeModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#aaa">✕</button>
+  </div>${inner}`);
+}
+
+function doScan() {
+  const icon = document.getElementById('qrIcon');
+  if(icon) icon.textContent='⏳';
+  setTimeout(()=>{
+    closeModal();
+    openAdd();
+    showToast('📷 QR uğurla oxundu!');
+  },1600);
+}
+
+function showModal(html) {
+  closeModal();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'modalOverlay';
+  overlay.onclick = (e)=>{ if(e.target===overlay) closeModal(); };
+  const box = document.createElement('div');
+  box.className = 'modal-box';
+  box.style.background = dark?'#1e293b':'#fff';
+  box.innerHTML = html;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+function closeModal() {
+  const m = document.getElementById('modalOverlay');
+  if(m) m.remove();
+}
+
+function openAdd() {
+  const today = new Date().toISOString().split('T')[0];
+  showModal(`
+    <div style="font-weight:900;font-size:18px;color:${dark?'#f1f5f9':'#1e293b'};margin-bottom:16px">🥗 Məhsul Əlavə Et</div>
+    <input id="addName" class="input" placeholder="Məhsulun adı" style="${dark?'background:#253347;border-color:#475569;color:#f1f5f9':''}">
+    <input id="addExpiry" type="date" class="input" min="${today}" style="${dark?'background:#253347;border-color:#475569;color:#f1f5f9':''}">
+    <select id="addCat" class="input" style="${dark?'background:#253347;border-color:#475569;color:#f1f5f9':''}">
+      ${CATEGORIES.map(c=>`<option>${c}</option>`).join('')}
+    </select>
+    <button class="ai-btn" id="aiBtnAdd" onclick="getAIRecipe()">🤖 AI ilə Resept Yarat</button>
+    <textarea id="addRecipe" class="input" rows="3" placeholder="Resepti özünüz yazın və ya AI-dan alın..." style="resize:vertical;line-height:1.6;margin-bottom:14px;${dark?'background:#253347;border-color:#475569;color:#f1f5f9':''}"></textarea>
+    <button class="btn-primary" onclick="addFood()">Əlavə Et</button>
+    <button class="btn-secondary" style="${dark?'background:#334155;color:#94a3b8':''}" onclick="closeModal()">İmtina</button>
+  `);
+}
+
+async function getAIRecipe() {
+  const name = document.getElementById('addName')?.value;
+  const cat = document.getElementById('addCat')?.value;
+  if(!name) { showToast('⚠️ Əvvəlcə məhsul adını yazın!'); return; }
+  const btn = document.getElementById('aiBtnAdd');
+  if(btn) { btn.innerHTML='<span class="spin">⏳</span> AI resept hazırlayır...'; btn.disabled=true; }
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+        messages:[{role:'user',content:`Sən bir aşpaz köməkçisisən. "${name}" (kateqoriya: ${cat}) məhsulu üçün qısa, praktik bir Azərbaycan resepti yaz. Maksimum 3-4 cümlə. Sadə və ev şəraitində hazırlanabilən olsun. Yalnız resepti yaz, başqa heç nə yazma.`}]})
+    });
+    const data = await res.json();
+    const recipe = data.content?.[0]?.text||'Resept tapılmadı.';
+    const ta = document.getElementById('addRecipe');
+    if(ta) ta.value = recipe;
+    showToast('🤖 AI resept hazırladı!');
+  } catch(e) { showToast('❌ Xəta baş verdi.'); }
+  if(btn) { btn.innerHTML='🤖 AI ilə Resept Yarat'; btn.disabled=false; }
+}
+
+function addFood() {
+  const name = document.getElementById('addName')?.value?.trim();
+  const expiry = document.getElementById('addExpiry')?.value;
+  const category = document.getElementById('addCat')?.value;
+  const recipe = document.getElementById('addRecipe')?.value?.trim() || 'Resept hələ əlavə edilməyib.';
+  if(!name||!expiry) { showToast('⚠️ Ad və tarix lazımdır!'); return; }
+  foods.push({id:Date.now(),name,added:new Date().toISOString().split('T')[0],expiry,category,recipe});
+  save(); closeModal(); render();
+  showToast('✅ Məhsul əlavə edildi!');
+}
+
+function deleteFood(id) {
+  const f = foods.find(x=>x.id===id);
+  if(f) { history.push({name:f.name,onTime:daysLeft(f.expiry)>=0}); }
+  foods = foods.filter(x=>x.id!==id);
+  save(); closeModal(); render();
+  showToast(f&&daysLeft(f.expiry)>=0?'✅ Vaxtında istifadə edildi!':'⚠️ Məhsul bitmişdi.');
+}
+
+function openDetail(id) {
+  const f = foods.find(x=>x.id===id);
+  if(!f) return;
+  const d = daysLeft(f.expiry);
+  const cfg = d<=1?{bg:'#ef4444',label:'Kritik'}:d<=3?{bg:'#f59e0b',label:'Tezliklə'}:{bg:'#22c55e',label:'Normal'};
+  showModal(`
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:54px">${CAT_EMOJI[f.category]||'🍱'}</div>
+      <div style="font-weight:900;font-size:20px;color:${dark?'#f1f5f9':'#1e293b'};margin-top:8px">${f.name}</div>
+      <span class="badge" style="background:${cfg.bg};margin-top:6px;display:inline-block">${cfg.label}</span>
+    </div>
+    ${detailRow('📅 Əlavə tarixi', f.added)}
+    ${detailRow('⏰ Bitmə tarixi', f.expiry)}
+    ${detailRow('📦 Kateqoriya', f.category)}
+    ${detailRow('⏳ Qalan gün', d+' gün')}
+    <div style="margin-top:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-weight:800;color:#00A550;font-size:13px">👨‍🍳 Resept</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="getAIRecipeDetail(${id})" id="aiBtnDetail" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif">🤖 AI</button>
+          <button onclick="editRecipe(${id})" style="background:${dark?'#334155':'#f1f5f9'};color:${dark?'#f1f5f9':'#1e293b'};border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif">✏️ Redaktə</button>
+        </div>
+      </div>
+      <div id="recipeBlock" style="background:${dark?'#0f2a1f':'#f0fdf4'};border-radius:12px;padding:12px;font-size:13px;color:${dark?'#94a3b8':'#555'};line-height:1.7">${f.recipe}</div>
+    </div>
+    <button class="btn-danger" style="${dark?'background:#3b0f0f':''}" onclick="deleteFood(${id})">🗑️ Sil</button>
+    <button class="btn-secondary" style="${dark?'background:#334155;color:#94a3b8':''}" onclick="closeModal()">Bağla</button>
+  `);
+}
+
+function detailRow(k,v) {
+  return `<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid ${dark?'#334155':'#f1f5f9'}">
+    <span style="font-size:13px;color:${dark?'#94a3b8':'#888'}">${k}</span>
+    <span style="font-size:13px;font-weight:700;color:${dark?'#f1f5f9':'#1e293b'}">${v}</span>
+  </div>`;
+}
+
+async function getAIRecipeDetail(id) {
+  const f = foods.find(x=>x.id===id);
+  if(!f) return;
+  const btn = document.getElementById('aiBtnDetail');
+  if(btn) { btn.textContent='⏳'; btn.disabled=true; }
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+        messages:[{role:'user',content:`Sən bir aşpaz köməkçisisən. "${f.name}" (kateqoriya: ${f.category}) məhsulu üçün qısa, praktik bir Azərbaycan resepti yaz. Maksimum 3-4 cümlə. Sadə və ev şəraitində hazırlanabilən olsun. Yalnız resepti yaz, başqa heç nə yazma.`}]})
+    });
+    const data = await res.json();
+    const recipe = data.content?.[0]?.text||'Resept tapılmadı.';
+    foods = foods.map(x=>x.id===id?{...x,recipe}:x);
+    save();
+    const rb = document.getElementById('recipeBlock');
+    if(rb) rb.textContent = recipe;
+    showToast('🤖 AI resept yeniləndi!');
+  } catch(e) { showToast('❌ Xəta baş verdi.'); }
+  if(btn) { btn.innerHTML='🤖 AI'; btn.disabled=false; }
+}
+
+function editRecipe(id) {
+  const f = foods.find(x=>x.id===id);
+  if(!f) return;
+  const rb = document.getElementById('recipeBlock');
+  if(!rb) return;
+  rb.innerHTML = `<textarea id="recipeEdit" style="width:100%;border:1.5px solid ${dark?'#475569':'#e5e7eb'};border-radius:10px;padding:10px;font-size:13px;background:${dark?'#1e293b':'#fff'};color:${dark?'#f1f5f9':'#1e293b'};font-family:'Nunito',sans-serif;resize:vertical;line-height:1.6;min-height:80px" onfocus="this.style.outline='none'">${f.recipe}</textarea>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button onclick="saveRecipe(${id})" style="flex:1;background:#00A550;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif">✅ Saxla</button>
+    <button onclick="openDetail(${id})" style="flex:1;background:${dark?'#334155':'#f1f5f9'};color:${dark?'#94a3b8':'#555'};border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif">İmtina</button>
+  </div>`;
+}
+
+function saveRecipe(id) {
+  const val = document.getElementById('recipeEdit')?.value;
+  if(!val) return;
+  foods = foods.map(x=>x.id===id?{...x,recipe:val}:x);
+  save();
+  openDetail(id);
+  showToast('✅ Resept saxlanıldı!');
+}
+
+// Init
+if(dark) { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent='☀️'; }
+render();
+</script>
+</body>
+</html>
