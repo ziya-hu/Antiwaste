@@ -257,7 +257,7 @@ function render() {
         <div style="font-weight:900;font-size:20px;margin-top:8px">İstifadəçi</div>
         <div style="opacity:0.85;font-size:13px;margin-top:4px">AntiWaste Üzvü · ${new Date().getFullYear()}</div>
       </div>
-      ${profileCard('💰','Qənaət','₼ 45.00')}
+      ${profileCard('💰','Qənaət','₼ '+(onTimeCount*3).toFixed(2))}
       ${profileCard('🌿','İsraf miqdarı',`${totalDeleted-onTimeCount} məhsul`)}
       ${profileCard('📦','İzlənən ərzaq',`${foods.length} məhsul`)}
       ${profileCard('🏆','Xal',`${xal}`)}
