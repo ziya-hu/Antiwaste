@@ -527,7 +527,10 @@
               <div onClick={e => e.stopPropagation()} style={modalBox}>
                 <div style={{ fontWeight: 900, fontSize: 18, color: t.text, marginBottom: 16 }}>➕ Yeni Məhsul</div>
                 <input value={newFood.name} onChange={e => setNewFood(p => ({ ...p, name: e.target.value }))} placeholder="Məhsul adı" style={inputStyle} />
-                <input type="date" value={newFood.expiry} onChange={e => setNewFood(p => ({ ...p, expiry: e.target.value }))} style={inputStyle} />
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, color: t.sub, marginBottom: 4, fontWeight: 700 }}>📅 Bitmə tarixi</div>
+                  <input type="date" value={newFood.expiry} onChange={e => setNewFood(p => ({ ...p, expiry: e.target.value }))} style={{ width: "100%", border: `1.5px solid ${t.inputBorder}`, borderRadius: 10, padding: "11px 13px", fontSize: 16, outline: "none", background: t.inputBg, color: t.text, colorScheme: dark ? "dark" : "light", appearance: "none", WebkitAppearance: "none" }} />
+                </div>
                 <select value={newFood.category} onChange={e => setNewFood(p => ({ ...p, category: e.target.value }))} style={inputStyle}>
                   {Object.keys(CAT_EMOJI).map(c => <option key={c}>{c}</option>)}
                 </select>
