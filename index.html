@@ -30,7 +30,14 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
-    const { useState, useRef } = React;
+    const { useState, useRef, useEffect } = React;
+
+    function getSaved(key, fallback) {
+      try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+    }
+    function save(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+    }
 
     const TODAY = new Date();
 
@@ -89,8 +96,8 @@
 
     function App() {
       const [tab, setTab] = useState(0);
-      const [foods, setFoods] = useState(initialFoods);
-      const [history, setHistory] = useState(initialHistory);
+      const [foods, setFoods] = useState(() => getSaved("aw_foods", initialFoods));
+      const [history, setHistory] = useState(() => getSaved("aw_history", initialHistory));
       const [showAdd, setShowAdd] = useState(false);
       const [detail, setDetail] = useState(null);
       const [editingRecipe, setEditingRecipe] = useState(false);
@@ -98,16 +105,22 @@
       const [newFood, setNewFood] = useState({ name: "", expiry: "", category: "Salat", recipe: "" });
       const [toast, setToast] = useState("");
       const [scanning, setScanning] = useState(false);
-      const [dark, setDark] = useState(false);
+      const [dark, setDark] = useState(() => getSaved("aw_dark", false));
       const [aiLoading, setAiLoading] = useState(false);
       const [aiLoadingDetail, setAiLoadingDetail] = useState(false);
       const [statFilter, setStatFilter] = useState(null);
-      const [profilePhoto, setProfilePhoto] = useState(null);
-      const [profileName, setProfileName] = useState("İstifadəçi");
+      const [profilePhoto, setProfilePhoto] = useState(() => getSaved("aw_photo", null));
+      const [profileName, setProfileName] = useState(() => getSaved("aw_name", "İstifadəçi"));
       const [editingName, setEditingName] = useState(false);
       const [tempName, setTempName] = useState("");
       const [showPhotoOptions, setShowPhotoOptions] = useState(false);
       const fileInputRef = useRef(null);
+
+      useEffect(() => { save("aw_foods", foods); }, [foods]);
+      useEffect(() => { save("aw_history", history); }, [history]);
+      useEffect(() => { save("aw_dark", dark); }, [dark]);
+      useEffect(() => { save("aw_photo", profilePhoto); }, [profilePhoto]);
+      useEffect(() => { save("aw_name", profileName); }, [profileName]);
 
       const expiring = foods.filter(f => daysLeft(f.expiry) <= 3);
       const safe = foods.filter(f => daysLeft(f.expiry) > 3);
