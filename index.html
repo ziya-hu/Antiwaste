@@ -74,7 +74,7 @@
       { name: "Ayran", onTime: true },
     ];
 
-    const CAT_EMOJI = { Salat: "🥗", Dən: "🌾", Ərzaq: "🥘", Pasta: "🍝", Südlü: "🥛", Meyvə: "🍎" };
+    const CAT_EMOJI = { Salat: "🥗", Dən: "🌾", Ərzaq: "🥘", Pasta: "🍝", Südlü: "🥛", Meyvə: "🍎", "Digər Ərzaqlar": "🛒" };
 
     function daysLeft(expiry) {
       return Math.ceil((new Date(expiry) - TODAY) / 86400000);
@@ -231,6 +231,16 @@
         notify("✅ Məhsul əlavə edildi!");
       }
 
+      function scan() {
+        setScanning(true);
+        setTimeout(() => {
+          setScanning(false);
+          setNewFood({ name: "", expiry: "", category: "Digər Ərzaqlar", recipe: "" });
+          setShowAdd(true);
+          notify("📷 QR uğurla oxundu!");
+        }, 1500);
+      }
+
       function deleteFood(id) {
         const food = foods.find(f => f.id === id);
         if (food) {
@@ -241,11 +251,6 @@
         setDetail(null);
         setEditingRecipe(false);
         notify(food && daysLeft(food.expiry) >= 0 ? "✅ Vaxtında istifadə edildi!" : "🗑️ Məhsul bitdi.");
-      }
-
-      function scan() {
-        setScanning(true);
-        setTimeout(() => { setScanning(false); setShowAdd(true); notify("📷 QR uğurla oxundu!"); }, 1500);
       }
 
       const tabs = [
@@ -617,3 +622,4 @@
   </script>
 </body>
 </html>
+  
