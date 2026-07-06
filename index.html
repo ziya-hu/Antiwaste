@@ -20,8 +20,11 @@
     .spin { animation: spin 1s linear infinite; display: inline-block; }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     .fadeIn { animation: fadeIn 0.2s ease; }
+    #qr-reader video { width: 100% !important; border-radius: 12px; }
+    #qr-reader { border: none !important; }
   </style> 
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -118,7 +121,6 @@
       const [editRecipeText, setEditRecipeText] = useState("");
       const [newFood, setNewFood] = useState({ name: "", expiry: "", category: "Salat", recipe: "" });
       const [toast, setToast] = useState("");
-      const [scanning, setScanning] = useState(false);
       const [dark, setDark] = useState(() => getSaved("aw_dark", false));
       const [aiLoading, setAiLoading] = useState(false);
       const [aiLoadingDetail, setAiLoadingDetail] = useState(false);
@@ -128,13 +130,73 @@
       const [editingName, setEditingName] = useState(false);
       const [tempName, setTempName] = useState("");
       const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+      const [showScanner, setShowScanner] = useState(false);
+      const [scannerError, setScannerError] = useState("");
       const fileInputRef = useRef(null);
+      const html5QrRef = useRef(null);
 
       useEffect(() => { save("aw_foods", foods); }, [foods]);
       useEffect(() => { save("aw_history", history); }, [history]);
       useEffect(() => { save("aw_dark", dark); }, [dark]);
       useEffect(() => { save("aw_photo", profilePhoto); }, [profilePhoto]);
       useEffect(() => { save("aw_name", profileName); }, [profileName]);
+
+      // QR SKANER: kamera açılışı, oxuma və təmizləmə
+      useEffect(() => {
+        if (!showScanner) return;
+        setScannerError("");
+
+        if (typeof Html5Qrcode === "undefined") {
+          setScannerError("Skaner kitabxanası yüklənmədi. İnterneti yoxlayın.");
+          return;
+        }
+
+        const qr = new Html5Qrcode("qr-reader");
+        html5QrRef.current = qr;
+        let stopped = false;
+
+        qr.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 240, height: 240 } },
+          (decodedText) => {
+            if (stopped) return;
+            stopped = true;
+            handleScanSuccess(decodedText);
+          },
+          () => { /* frame-də tapılmadı, normaldır — sükutla keç */ }
+        ).catch((err) => {
+          setScannerError("Kameraya çıxış tapılmadı. Brauzer icazəsini yoxlayın (HTTPS lazımdır).");
+        });
+
+        return () => {
+          stopped = true;
+          if (html5QrRef.current) {
+            const inst = html5QrRef.current;
+            html5QrRef.current = null;
+            inst.stop().then(() => inst.clear()).catch(() => {});
+          }
+        };
+      }, [showScanner]);
+
+      function handleScanSuccess(decodedText) {
+        setShowScanner(false);
+        let parsed = { name: "", expiry: "", category: "Digər Ərzaqlar", recipe: "" };
+        try {
+          const obj = JSON.parse(decodedText);
+          parsed = {
+            name: obj.name || obj.ad || "",
+            expiry: obj.expiry || obj.tarix || "",
+            category: (obj.category || obj.kateqoriya) in CAT_EMOJI ? (obj.category || obj.kateqoriya) : "Digər Ərzaqlar",
+            recipe: obj.recipe || obj.resept || "",
+          };
+        } catch {
+          // JSON deyilsə, oxunan mətni məhsul adı kimi qəbul et
+          parsed.name = decodedText.slice(0, 60);
+        }
+        setNewFood(parsed);
+        setShowAdd(true);
+        notify("📷 QR uğurla oxundu!");
+      }
 
       const expiring = foods.filter(f => daysLeft(f.expiry) <= 3);
       const safe = foods.filter(f => daysLeft(f.expiry) > 3);
@@ -229,16 +291,6 @@
         setNewFood({ name: "", expiry: "", category: "Salat", recipe: "" });
         setShowAdd(false);
         notify("✅ Məhsul əlavə edildi!");
-      }
-
-      function scan() {
-        setScanning(true);
-        setTimeout(() => {
-          setScanning(false);
-          setNewFood({ name: "", expiry: "", category: "Digər Ərzaqlar", recipe: "" });
-          setShowAdd(true);
-          notify("📷 QR uğurla oxundu!");
-        }, 1500);
       }
 
       function deleteFood(id) {
@@ -341,8 +393,8 @@
                     </div>
                   ))}
                 </div>
-                <div onClick={scan} style={{ margin: "8px 16px", background: "linear-gradient(135deg,#16a34a,#4ade80)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
-                  <div style={{ fontSize: 36 }}>{scanning ? "⏳" : "📷"}</div>
+                <div onClick={() => setShowScanner(true)} style={{ margin: "8px 16px", background: "linear-gradient(135deg,#16a34a,#4ade80)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
+                  <div style={{ fontSize: 36 }}>📷</div>
                   <div style={{ color: "#fff" }}>
                     <div style={{ fontWeight: 900, fontSize: 15 }}>QR Kodu Skan Et</div>
                     <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>Qabın üzərindəki kodu oxudun</div>
@@ -510,6 +562,28 @@
             </div>
           )}
 
+          {/* QR SKANER MODAL */}
+          {showScanner && (
+            <div onClick={() => setShowScanner(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+              <div onClick={e => e.stopPropagation()} className="fadeIn" style={{ background: t.card, width: "100%", maxWidth: 420, borderRadius: 18, padding: 18 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <div style={{ fontWeight: 900, fontSize: 16, color: t.text }}>📷 QR Kodu Skan Et</div>
+                  <button onClick={() => setShowScanner(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: t.text }}>✕</button>
+                </div>
+                {scannerError ? (
+                  <div style={{ textAlign: "center", padding: "24px 8px", color: "#ef4444", fontSize: 13, fontWeight: 700 }}>
+                    {scannerError}
+                  </div>
+                ) : (
+                  <div id="qr-reader" style={{ width: "100%", borderRadius: 12, overflow: "hidden" }}></div>
+                )}
+                <div style={{ fontSize: 12, color: t.sub, textAlign: "center", marginTop: 12 }}>
+                  Kodu kamera çərçivəsinə tutun — avtomatik oxunacaq
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* STAT FİLTER MODAL */}
           {statFilter && (
             <div onClick={() => setStatFilter(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 200, display: "flex", alignItems: "flex-end" }}>
@@ -622,4 +696,3 @@
   </script>
 </body>
 </html>
-  
